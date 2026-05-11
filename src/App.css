@@ -1,0 +1,32 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0px;
+  text-align: center;
+  overflow: hidden;
+}
+.container-imemorage{
+  background-color: rgb(228, 228, 228);
+  padding: 0px;
+  margin: 0px;
+}
+
+.ImageContainerResults{
+  width:1500px;
+  height: 300px;
+  display:flex;
+  justify-content: left;
+}
+
+
+.imemorage-image-wrapper{
+  height:100px;
+  width:100px;
+  overflow:hidden;
+  margin: 1px;
+  position:relative;
+}
+.imemorage-image{
+  height: 100px;
+  min-width: 100%;
+}
