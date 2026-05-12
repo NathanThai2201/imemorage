@@ -12,10 +12,51 @@
 }
 
 .ImageContainerResults{
-  width:1500px;
-  height: 300px;
+  width:1100px;
+  height: 100px;
   display:flex;
-  justify-content: left;
+  justify-content: center;
+}
+.ImageContainerResults2{
+  width:1100px;
+  height: 150px;
+  display:flex;
+  justify-content: center;
+  align-items: top;
+}
+
+
+.imemorage-memo-image-wrapper{
+  height:300px;
+  width:300px;
+  overflow:hidden;
+  margin: 2px;
+  position:relative;
+  box-sizing: border-box;
+}
+.imemorage-memo-image{
+  height: 300px;
+  min-width: 100%;
+}
+.swiper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.swiper-wrapper {
+  align-items: center;
+}
+
+.swiper-slide {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.swiper-slide > div {
+  margin: 0 auto;
 }
 
 
@@ -23,8 +64,9 @@
   height:100px;
   width:100px;
   overflow:hidden;
-  margin: 1px;
+  margin: 2px;
   position:relative;
+  box-sizing: border-box;
 }
 .imemorage-image{
   height: 100px;
