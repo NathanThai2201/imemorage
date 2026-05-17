@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 import './App.css'
@@ -96,8 +96,52 @@ function App() {
 "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzg0NjkzNjZ8&ixlib=rb-4.1.0&q=80&w=400",
     ]),[]]);
   const [userImageArrayRefs, setUserImageArrayRefs] = useState(new Array(30).fill(10000)); // default out of range
+  const [timeLeft, setTimeLeft] = useState(20);
+  const [phaseList, setPhaseList] = useState(["block","None","None","None","None"]);
+  
+  // game loop timer
+  useEffect(() => {
+        let interval;
+        if(timeLeft > 0) {
+            interval = setInterval(()=>{
+
+                setTimeLeft(timeLeft - 1);
+                let totalTime = 60 - timeLeft;
+            }, 1000);
+
+        } else if (timeLeft === 0) {
+            clearInterval(interval);
+            if (phaseList[0] === "block"){
+              setPhaseList(["None","block","None","None","None"]);
+              setTimeLeft(60);
+            }
+            if (phaseList[1] === "block"){
+              setPhaseList(["None","None","block","None","None"]);
+              setTimeLeft(240);
+            }
+            if (phaseList[2] === "block"){
+              validateResults();
+              setPhaseList(["None","None","None","block","None"]);
+              setTimeLeft(600);
+            }
+            if (phaseList[3] === "block"){
+              setPhaseList(["None","None","None","None","block"]);
+              setTimeLeft(600);
+            }
+            if (phaseList[4] === "block"){
+              setPhaseList(["block","None","None","None","None"]);
+              setTimeLeft(20);
+              fetchImageUrls();
+            }
+        }
+        return () => {
+            clearInterval(interval);
+        };
+    },[timeLeft])
+
   //console.log("FIRST",imageArray,userImageArray);
   const fetchImageUrls = async () => {
+        setUserBlankArray(new Array(30).fill(blank_url));
         const accessKey = 'NUnYdcxM5FQOtF00QDzuIWjfYrHyR8up1TynlkVmmhc';
         const count = 30;
         const url = `https://api.unsplash.com/photos/random?client_id=${accessKey}&count=${count}`;
@@ -178,9 +222,27 @@ function App() {
       }
     }
   }
+
   return (
     <>
       <div className="container-imemorage">
+        <div className="phase0"style={{display:phaseList[0]}}>
+          <p>Time Left: <strong>{timeLeft}</strong></p>
+          <button onClick={() => setTimeLeft(0)}>
+            Ready
+          </button>
+        </div>
+        <div className="phase1" style={{display:phaseList[1]}}>
+          <p>Time Left: <strong>
+            {Math.floor(timeLeft / 60)
+          .toString()
+          .padStart(1, "0")}
+        :
+        {(timeLeft % 60)
+          .toString()
+          .padStart(2, "0")}
+          </strong></p>
+
           <Swiper
             // install Swiper modules
             modules={[Navigation, Pagination, Scrollbar, A11y]}
@@ -201,136 +263,160 @@ function App() {
                           </SwiperSlide>
                       ))}
           </Swiper>
-
-
-
-
-        <div style={{height:"30px"}}></div>
-
-        <div className="ImageContainerMoveables">
-                    {
-                    userBlankArray.slice(0,10).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index,"blank")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerMoveables">
-                    {
-                    userBlankArray.slice(10,20).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index+10,"blank")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerMoveables">
-                    {
-                    userBlankArray.slice(20,30).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index+20,"blank")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-        </div>
-
-        
-        <div className="ImageContainerMoveables">
-                    {
-                    userImageArray[0].slice(0,10).map((image, index) => (           
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index,"image")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-                    
-        </div>
-        <div className="ImageContainerMoveables">
-                    {
-                    userImageArray[0].slice(10,20).map((image, index) => (           
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index+10,"image")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-                    
-        </div>
-        <div className="ImageContainerMoveables">
-                    {
-                    userImageArray[0].slice(20,30).map((image, index) => (           
-                        <div key={index} className="imemorage-image-wrapper">
-                          <button className="imemorage-button" onClick={() => handleMoveables(index+20,"image")}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                          </button>
-                        </div>
-                    ))}
-                    
-        </div>
-
+          <button onClick={() => setTimeLeft(0)}>
+            Done
+          </button>
+        </div> 
 
 
         <div style={{height:"30px"}}></div>
 
-        <div className="ImageContainerResults">
-                    {
-                    imageArray.slice(0,10).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
+        <div className="phase2" style={{display:phaseList[2]}}>              
+          <p>Time Left: <strong>  
+            {Math.floor(timeLeft / 60)
+          .toString()
+          .padStart(1, "0")}
+        :
+        {(timeLeft % 60)
+          .toString()
+          .padStart(2, "0")}
+          </strong></p>
+          <div className="ImageContainerMoveables">
+                      {
+                      userBlankArray.slice(0,10).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index,"blank")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerMoveables">
+                      {
+                      userBlankArray.slice(10,20).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index+10,"blank")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerMoveables">
+                      {
+                      userBlankArray.slice(20,30).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index+20,"blank")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+          </div>
+
+          
+          <div className="ImageContainerMoveables">
+                      {
+                      userImageArray[0].slice(0,10).map((image, index) => (           
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index,"image")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+                      
+          </div>
+          <div className="ImageContainerMoveables">
+                      {
+                      userImageArray[0].slice(10,20).map((image, index) => (           
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index+10,"image")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+                      
+          </div>
+          <div className="ImageContainerMoveables">
+                      {
+                      userImageArray[0].slice(20,30).map((image, index) => (           
+                          <div key={index} className="imemorage-image-wrapper">
+                            <button className="imemorage-button" onClick={() => handleMoveables(index+20,"image")}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                            </button>
+                          </div>
+                      ))}
+                      
+          </div>
+          <button onClick={() => setTimeLeft(0)}>
+            Finished
+          </button>
         </div>
-        <div className="ImageContainerResults" style={{height:"150px"}}>
-                    {
-                    userImageArray[0].slice(0,10).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index], border:"4px solid"}}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerResults">
-                    {
-                    imageArray.slice(10,20).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerResults" style={{height:"150px"}}>
-                    {
-                    userImageArray[0].slice(10,20).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+10], border:"4px solid"}}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerResults">
-                    {
-                    imageArray.slice(20,30).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper">
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
-        </div>
-        <div className="ImageContainerResults" style={{height:"150px"}}>
-                    {
-                    userImageArray[0].slice(20,30).map((image, index) => (
-                        <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+20], border:"4px solid"}}>
-                            <img className="imemorage-image" src={image} alt={index} />
-                        </div>
-                    ))}
-        </div>
-        <button onClick={() => validateResults()}>
-          Validate results
-        </button>
-        <button onClick={() => fetchImageUrls()}>
-          Start again
-        </button>
+
+
+        <div style={{height:"30px"}}></div>
+
+        <div className="phase3" style={{display:phaseList[3]}}>         
+          <div className="ImageContainerResults">
+                      {
+                      imageArray.slice(0,10).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerResults" style={{height:"150px"}}>
+                      {
+                      userImageArray[0].slice(0,10).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index], border:"4px solid"}}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerResults">
+                      {
+                      imageArray.slice(10,20).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerResults" style={{height:"150px"}}>
+                      {
+                      userImageArray[0].slice(10,20).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+10], border:"4px solid"}}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerResults">
+                      {
+                      imageArray.slice(20,30).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper">
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          <div className="ImageContainerResults" style={{height:"150px"}}>
+                      {
+                      userImageArray[0].slice(20,30).map((image, index) => (
+                          <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+20], border:"4px solid"}}>
+                              <img className="imemorage-image" src={image} alt={index} />
+                          </div>
+                      ))}
+          </div>
+          {/* <button onClick={() => validateResults()}>
+            Validate results
+          </button> */}
+          <button onClick={() => setTimeLeft(0)}>
+            Finished
+          </button>
+        </div>  
+
+        <div className="phase4" style={{display:phaseList[4]}}>
+          <div>Stats:</div>
+          <button onClick={() => setTimeLeft(0)}>
+            Finished
+          </button>
+        </div> 
         <p>
         </p>
       </div>
