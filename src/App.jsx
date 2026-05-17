@@ -124,16 +124,17 @@ function App() {
         }
     };
   const validateResults = async () => {
-    console.log(imageArray, userImageArray);
+    // set array to blank array
+    const tempBlankArray = [...userBlankArray];
     const colors = [];
     for (var i = 0; i<30; i++){
-      if (imageArray[i] === userImageArray[0][i]){
+      if (imageArray[i] === tempBlankArray[i]){
         colors.push('#48e87d');
       }else{
         colors.push('#e85555');
       }
     }
-    setUserImageArray([userImageArray[0],colors])
+    setUserImageArray([tempBlankArray,colors])
   }
   // main game loop:
   const handleMoveables = (i,list) => {
@@ -142,13 +143,12 @@ function App() {
     const tempImageArrayRefs = [...userImageArrayRefs];
 
     // console.log("input args:",i,list);
-    console.log("arrays:");
-    console.log(tempBlankArray,tempImageArray);
+    // console.log("arrays:");
+    // console.log(tempBlankArray,tempImageArray);
     if (list === "image"){
-
       // find first available blank and place it, shitty queue.
       for (const a in tempBlankArray){
-        console.log(tempBlankArray[a]);
+        // console.log(tempBlankArray[a]);
         if (tempBlankArray[a] === blank_url){
           // disable if user image array is blank:
           if (tempImageArray[i] === blank_url){break}
@@ -167,7 +167,16 @@ function App() {
         }
       }
     }
+    if (list === "blank"){
+      if (tempBlankArray[i] !== blank_url){
+        tempImageArray[tempImageArrayRefs[i]] = tempBlankArray[i]
 
+        tempBlankArray[i] = blank_url;
+        setUserBlankArray(tempBlankArray);
+        setUserImageArrayRefs(tempImageArrayRefs);
+        setUserImageArray([tempImageArray,[]]);
+      }
+    }
   }
   return (
     <>
@@ -320,7 +329,7 @@ function App() {
           Validate results
         </button>
         <button onClick={() => fetchImageUrls()}>
-          Start again with new images
+          Start again
         </button>
         <p>
         </p>
