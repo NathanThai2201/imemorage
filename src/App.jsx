@@ -27,6 +27,7 @@ function shuffle(array) {
 
 function App() {
   // temporary hardcode
+  const blank_url = "https://i.imgur.com/qFmcbT0.png";
   const [imageArray, setImageArray] = useState([
      
 "https://images.unsplash.com/photo-1763507159330-7d05a8aa0c49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
@@ -60,6 +61,7 @@ function App() {
 "https://images.unsplash.com/photo-1777137583574-277fd6ede8d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
 "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzg0NjkzNjZ8&ixlib=rb-4.1.0&q=80&w=400",
     ]);
+  const [userBlankArray, setUserBlankArray] = useState(new Array(30).fill(blank_url));
   const [userImageArray, setUserImageArray] = useState([shuffle([
      
 "https://images.unsplash.com/photo-1763507159330-7d05a8aa0c49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
@@ -93,7 +95,7 @@ function App() {
 "https://images.unsplash.com/photo-1777137583574-277fd6ede8d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
 "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzg0NjkzNjZ8&ixlib=rb-4.1.0&q=80&w=400",
     ]),[]]);
-
+  const [userImageArrayRefs, setUserImageArrayRefs] = useState(new Array(30).fill(10000)); // default out of range
   //console.log("FIRST",imageArray,userImageArray);
   const fetchImageUrls = async () => {
         const accessKey = 'NUnYdcxM5FQOtF00QDzuIWjfYrHyR8up1TynlkVmmhc';
@@ -133,6 +135,40 @@ function App() {
     }
     setUserImageArray([userImageArray[0],colors])
   }
+  // main game loop:
+  const handleMoveables = (i,list) => {
+    const tempBlankArray = [...userBlankArray];
+    const tempImageArray = [...userImageArray[0]];
+    const tempImageArrayRefs = [...userImageArrayRefs];
+
+    // console.log("input args:",i,list);
+    console.log("arrays:");
+    console.log(tempBlankArray,tempImageArray);
+    if (list === "image"){
+
+      // find first available blank and place it, shitty queue.
+      for (const a in tempBlankArray){
+        console.log(tempBlankArray[a]);
+        if (tempBlankArray[a] === blank_url){
+          // disable if user image array is blank:
+          if (tempImageArray[i] === blank_url){break}
+          //copy over to blank array
+          tempBlankArray[a] = tempImageArray[i];
+          // set a reference back to the blank array.
+          tempImageArrayRefs[a] = i;
+          // set a blank for the image array
+          tempImageArray[i] = blank_url;
+
+          // set states
+          setUserBlankArray(tempBlankArray);
+          setUserImageArrayRefs(tempImageArrayRefs);
+          setUserImageArray([tempImageArray,[]]);
+          break;
+        }
+      }
+    }
+
+  }
   return (
     <>
       <div className="container-imemorage">
@@ -160,6 +196,77 @@ function App() {
 
 
 
+        <div style={{height:"30px"}}></div>
+
+        <div className="ImageContainerMoveables">
+                    {
+                    userBlankArray.slice(0,10).map((image, index) => (
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index,"blank")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+        </div>
+        <div className="ImageContainerMoveables">
+                    {
+                    userBlankArray.slice(10,20).map((image, index) => (
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index+10,"blank")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+        </div>
+        <div className="ImageContainerMoveables">
+                    {
+                    userBlankArray.slice(20,30).map((image, index) => (
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index+20,"blank")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+        </div>
+
+        
+        <div className="ImageContainerMoveables">
+                    {
+                    userImageArray[0].slice(0,10).map((image, index) => (           
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index,"image")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+                    
+        </div>
+        <div className="ImageContainerMoveables">
+                    {
+                    userImageArray[0].slice(10,20).map((image, index) => (           
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index+10,"image")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+                    
+        </div>
+        <div className="ImageContainerMoveables">
+                    {
+                    userImageArray[0].slice(20,30).map((image, index) => (           
+                        <div key={index} className="imemorage-image-wrapper">
+                          <button className="imemorage-button" onClick={() => handleMoveables(index+20,"image")}>
+                            <img className="imemorage-image" src={image} alt={index} />
+                          </button>
+                        </div>
+                    ))}
+                    
+        </div>
+
+
+
+        <div style={{height:"30px"}}></div>
 
         <div className="ImageContainerResults">
                     {
@@ -169,7 +276,7 @@ function App() {
                         </div>
                     ))}
         </div>
-        <div className="ImageContainerResults2">
+        <div className="ImageContainerResults" style={{height:"150px"}}>
                     {
                     userImageArray[0].slice(0,10).map((image, index) => (
                         <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index], border:"4px solid"}}>
@@ -185,7 +292,7 @@ function App() {
                         </div>
                     ))}
         </div>
-        <div className="ImageContainerResults2">
+        <div className="ImageContainerResults" style={{height:"150px"}}>
                     {
                     userImageArray[0].slice(10,20).map((image, index) => (
                         <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+10], border:"4px solid"}}>
@@ -201,7 +308,7 @@ function App() {
                         </div>
                     ))}
         </div>
-        <div className="ImageContainerResults2">
+        <div className="ImageContainerResults" style={{height:"150px"}}>
                     {
                     userImageArray[0].slice(20,30).map((image, index) => (
                         <div key={index} className="imemorage-image-wrapper" style={{borderColor:userImageArray[1][index+20], border:"4px solid"}}>
