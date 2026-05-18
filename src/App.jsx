@@ -28,6 +28,7 @@ function shuffle(array) {
 function App() {
   // temporary hardcode
   const blank_url = "https://i.imgur.com/qFmcbT0.png";
+  const [imageCount, setImageCount] = useState(20);
   const [imageArray, setImageArray] = useState([
      
 "https://images.unsplash.com/photo-1763507159330-7d05a8aa0c49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
@@ -61,7 +62,7 @@ function App() {
 "https://images.unsplash.com/photo-1777137583574-277fd6ede8d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
 "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzg0NjkzNjZ8&ixlib=rb-4.1.0&q=80&w=400",
     ]);
-  const [userBlankArray, setUserBlankArray] = useState(new Array(30).fill(blank_url));
+  const [userBlankArray, setUserBlankArray] = useState(new Array(imageCount).fill(blank_url));
   const [userImageArray, setUserImageArray] = useState([shuffle([
      
 "https://images.unsplash.com/photo-1763507159330-7d05a8aa0c49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
@@ -95,10 +96,12 @@ function App() {
 "https://images.unsplash.com/photo-1777137583574-277fd6ede8d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzc5NTA1NjV8&ixlib=rb-4.1.0&q=80&w=1080",
 "https://images.unsplash.com/photo-1618331833071-ce81bd50d300?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NDIxNDB8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Nzg0NjkzNjZ8&ixlib=rb-4.1.0&q=80&w=400",
     ]),[]]);
-  const [userImageArrayRefs, setUserImageArrayRefs] = useState(new Array(30).fill(10000)); // default out of range
-  const [timeLeft, setTimeLeft] = useState(20);
-  const [phaseList, setPhaseList] = useState(["block","None","None","None","None"]);
-  
+  const [userImageArrayRefs, setUserImageArrayRefs] = useState(new Array(imageCount).fill(10000)); // default out of range
+  const [timeLeft, setTimeLeft] = useState(-1);
+  const [phaseList, setPhaseList] = useState(["None","None","None","None","None"]);
+  const [menuDisplay, setMenuDisplay] = useState("block");
+  const [stats, setStats] = useState([-1,-1,-1]) // score, memorization time, recall time
+
   // game loop timer
   useEffect(() => {
         let interval;
@@ -122,11 +125,11 @@ function App() {
             if (phaseList[2] === "block"){
               validateResults();
               setPhaseList(["None","None","None","block","None"]);
-              setTimeLeft(600);
+              setTimeLeft(-1);
             }
             if (phaseList[3] === "block"){
               setPhaseList(["None","None","None","None","block"]);
-              setTimeLeft(600);
+              setTimeLeft(-1);
             }
             if (phaseList[4] === "block"){
               setPhaseList(["block","None","None","None","None"]);
@@ -139,11 +142,12 @@ function App() {
         };
     },[timeLeft])
 
-  //console.log("FIRST",imageArray,userImageArray);
+  //console.log("FIRST",imageArray,userImageArray); 
+  // this also serves as a way to reset the game.
   const fetchImageUrls = async () => {
-        setUserBlankArray(new Array(30).fill(blank_url));
+        setUserBlankArray(new Array(imageCount).fill(blank_url));
         const accessKey = 'NUnYdcxM5FQOtF00QDzuIWjfYrHyR8up1TynlkVmmhc';
-        const count = 30;
+        const count = imageCount;
         const url = `https://api.unsplash.com/photos/random?client_id=${accessKey}&count=${count}`;
 
         try {
@@ -171,7 +175,7 @@ function App() {
     // set array to blank array
     const tempBlankArray = [...userBlankArray];
     const colors = [];
-    for (var i = 0; i<30; i++){
+    for (var i = 0; i<imageCount; i++){
       if (imageArray[i] === tempBlankArray[i]){
         colors.push('#48e87d');
       }else{
@@ -226,10 +230,27 @@ function App() {
   return (
     <>
       <div className="container-imemorage">
+        <div className="menu"style={{display:menuDisplay}}>
+          <input
+            type="number"
+            min="1"
+            max="30"
+            value={imageCount}
+            onChange={(e) => setImageCount(Number(e.target.value))}
+            placeholder="20"
+          />
+          <button onClick={() => {setMenuDisplay("None"),setTimeLeft(20),setPhaseList(["block","None","None","None","None"]),fetchImageUrls()}}>
+            Start Game!
+          </button>
+
+        </div>
         <div className="phase0"style={{display:phaseList[0]}}>
           <p>Time Left: <strong>{timeLeft}</strong></p>
           <button onClick={() => setTimeLeft(0)}>
             Ready
+          </button>
+          <button onClick={() => {setMenuDisplay("block"),setTimeLeft(-1),setPhaseList(["None","None","None","None","None"])}}>
+            Exit to Menu
           </button>
         </div>
         <div className="phase1" style={{display:phaseList[1]}}>
@@ -255,7 +276,7 @@ function App() {
             onSlideChange={() => console.log('slide change')}
             loop={true}
           >
-            {imageArray.slice(0,30).map((image, index) => (
+            {imageArray.slice(0,imageCount).map((image, index) => (
                           <SwiperSlide>
                           <div key={index} className="imemorage-memo-image-wrapper">
                               <img className="imemorage-memo-image" src={image} alt={index} />
@@ -263,14 +284,13 @@ function App() {
                           </SwiperSlide>
                       ))}
           </Swiper>
-          <button onClick={() => setTimeLeft(0)}>
+          <button onClick={() => {setStats([[...stats][0],timeLeft,[...stats][2]]),setTimeLeft(0)}}>
             Done
           </button>
+          <button onClick={() => {setMenuDisplay("block"),setTimeLeft(-1),setPhaseList(["None","None","None","None","None"])}}>
+            Exit to Menu
+          </button>
         </div> 
-
-
-        <div style={{height:"30px"}}></div>
-
         <div className="phase2" style={{display:phaseList[2]}}>              
           <p>Time Left: <strong>  
             {Math.floor(timeLeft / 60)
@@ -346,14 +366,13 @@ function App() {
                       ))}
                       
           </div>
-          <button onClick={() => setTimeLeft(0)}>
+          <button onClick={() => {setStats([[...stats][0],[...stats][1],timeLeft]),setTimeLeft(0)}}>
             Finished
           </button>
+          <button onClick={() => {setMenuDisplay("block"),setTimeLeft(-1),setPhaseList(["None","None","None","None","None"])}}>
+            Exit to Menu
+          </button>
         </div>
-
-
-        <div style={{height:"30px"}}></div>
-
         <div className="phase3" style={{display:phaseList[3]}}>         
           <div className="ImageContainerResults">
                       {
@@ -409,16 +428,39 @@ function App() {
           <button onClick={() => setTimeLeft(0)}>
             Finished
           </button>
+          <button onClick={() => {setMenuDisplay("block"),setTimeLeft(-1),setPhaseList(["None","None","None","None","None"])}}>
+            Exit to Menu
+          </button>
         </div>  
-
         <div className="phase4" style={{display:phaseList[4]}}>
           <div>Stats:</div>
+          <p>Score: <strong>{userImageArray.filter(x => x === '#48e87d').length}</strong></p>
+          <p>Memorization Time: <strong>
+            {Math.floor((60 - stats[1]) / 60)
+          .toString()
+          .padStart(1, "0")}
+        :
+        {((60 - stats[1]) % 60)
+          .toString()
+          .padStart(2, "0")}
+            </strong></p>
+            
+          <p>Recall Time: <strong>
+            {Math.floor((240 - stats[2]) / 60)
+          .toString()
+          .padStart(1, "0")}
+        :
+        {((240 - stats[2]) % 60)
+          .toString()
+          .padStart(2, "0")}
+            </strong></p>
           <button onClick={() => setTimeLeft(0)}>
             Finished
           </button>
+          <button onClick={() => {setMenuDisplay("block"),setTimeLeft(-1),setPhaseList(["None","None","None","None","None"])}}>
+            Exit to Menu
+          </button>
         </div> 
-        <p>
-        </p>
       </div>
     </>
   )
